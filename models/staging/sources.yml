@@ -1,0 +1,81 @@
+version: 2
+
+sources:
+  - name: raw
+    database: DATA_ACADEMY
+    schema: RAW
+    description: "Raw Olist e-commerce data loaded from CSV — all columns VARCHAR, no transformations applied"
+    
+    tables:
+      - name: ORDERS
+        description: "99K order headers — one row per order"
+        columns:
+          - name: order_id
+            description: "Primary key"
+          - name: customer_id
+            description: "Foreign key to customers"
+
+      - name: CUSTOMERS
+        description: "99K customer records — customer_id is per order, customer_unique_id is the real customer"
+        columns:
+          - name: customer_id
+            description: "Primary key — unique per order, not per real customer"
+          - name: customer_unique_id
+            description: "Real customer identifier — use this for repurchase analysis"
+
+      - name: ORDER_ITEMS
+        description: "112K order lines — one row per product per order"
+        columns:
+          - name: order_id
+            description: "Foreign key to orders"
+          - name: product_id
+            description: "Foreign key to products"
+          - name: seller_id
+            description: "Foreign key to sellers"
+
+      - name: ORDER_PAYMENTS
+        description: "103K payment records — an order can have multiple payment methods"
+        columns:
+          - name: order_id
+            description: "Foreign key to orders"
+          - name: payment_type
+            description: "Payment method — includes 'not_defined' edge cases"
+
+      - name: ORDER_REVIEWS
+        description: "99K reviews — comment fields are often empty strings, not NULL"
+        columns:
+          - name: review_id
+            description: "Not unique — duplicate review_ids exist in source"
+          - name: order_id
+            description: "Foreign key to orders"
+
+      - name: PRODUCTS
+        description: "32K products — two columns misspelled at source (lenght vs length)"
+        columns:
+          - name: product_id
+            description: "Primary key"
+          - name: product_name_lenght
+            description: "Misspelled at source — renamed to product_name_length in staging"
+          - name: product_description_lenght
+            description: "Misspelled at source — renamed to product_description_length in staging"
+
+      - name: SELLERS
+        description: "3K sellers"
+        columns:
+          - name: seller_id
+            description: "Primary key"
+
+      - name: GEOLOCATION
+        description: "1M rows — massive duplicates per zip code and coordinates outside Brazil"
+        columns:
+          - name: geolocation_zip_code_prefix
+            description: "Not unique — avg 52 rows per zip, aggregated to one point in staging"
+
+      - name: CATEGORY_TRANSLATION
+        identifier: PRODUCT_CATEGORY_NAME_TRANSLATION
+        description: "71 category translations from Portuguese to English — incomplete, some categories have no translation"
+        columns:
+          - name: product_category_name
+            description: "Primary key — Portuguese category name"
+          - name: product_category_name_english
+            description: "English translation"
